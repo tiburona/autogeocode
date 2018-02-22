@@ -1,4 +1,6 @@
-from refactor.Spreadsheet import Spreadsheet
+
+
+from modules.spreadsheet import Spreadsheet
 
 print('/Users/katie/map_collections_autogeocode/csvs/clean_dataset_iz_test.csv')
 print('/Users/katie/map_collections_autogeocode/keys.txt')
@@ -15,5 +17,3 @@ spreadsheet = Spreadsheet(csv_file='/Users/katie/map_collections_autogeocode/csv
 spreadsheet.fetch_geocoded_data()
 
 print(spreadsheet.location_fields)
-
-

@@ -1,21 +1,26 @@
 import csv
 import os
-from modules.Record import Record
+from modules.record import Record
+
+#idea for a feature to add: externally written cache so you don't do api lookups twice
 
 class Spreadsheet:
     'Class for a single csv'
 
-    def __init__(self, csv_file=None, location_fields=None, api_file=None):
-        for var, method, string in [(csv_file, self.get_csv_file, 'csv_file'), (api_file, self.get_api_file, 'api_file'),
-                          (location_fields, self.get_location_fields, 'location_fields')]:
-            if not var:
-                method()
-            else:
+    def __init__(self, csv_file=None, location_fields=None, api_file=None, id_field=None):
+        for var, method, string in [(csv_file, self.get_csv_file, 'csv_file'),
+                                    (api_file, self.get_api_file, 'api_file'),
+                                    (location_fields, self.get_location_fields, 'location_fields'),
+                                    (id_field, self.get_id_field, 'id_field')]:
+            if var:
                 setattr(self, string, var)
+            else:
+                method()
 
         self.split_field_string()
         self.gen_api_dict()
         self.reader = csv.DictReader(open(self.csv_file, "r", newline="", encoding="utf-8"))
+        self.cache = {}
 
     def get_location_fields(self):
 
@@ -46,8 +51,19 @@ class Spreadsheet:
     def get_csv_file(self):
         self.csv_file = input("Type the path to the csv file:    ")
 
+    def get_id_field(self):
+        self.id_field = input("Type the name of the record id column")
+
     def split_field_string(self):
         self.location_fields = self.location_fields.split(",")
 
     def fetch_geocoded_data(self):
-        self.rows = [Record(row, self.api_keys, self.location_fields).fetch_geocoded_data() for row in self.reader]
+        self.records = [Record(row, self) for row in self.reader]
+        [record.fetch_geocoded_data() for record in self.records]
+
+
+
+
+
+
+
