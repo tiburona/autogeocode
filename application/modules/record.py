@@ -8,17 +8,17 @@ class Record:
 
     def __init__(self, row_dict, spreadsheet):
         self.fields = row_dict
-        self.spreadsheet = spreadsheet
+        self.spreadsheet = {'cache': spreadsheet.cache, 'api_keys': spreadsheet.api_keys, 'id': spreadsheet.id_field,
+                            'location_fields': spreadsheet.location_fields}
         self.num_queries = 0
         self.location = None
-        self.id = spreadsheet.id_field
 
     def fetch_geocoded_data(self):
-        self.gen_location_arrays(self.spreadsheet.location_fields)
+        self.gen_location_arrays(self.spreadsheet['location_fields'])
         for location_array in self.location_arrays:
             query_string = ",".join(location_array)
-            if query_string in self.spreadsheet.cache:
-                self.location = self.spreadsheet.cache[query_string]
+            if query_string in self.spreadsheet['cache']:
+                self.location = self.spreadsheet['cache'][query_string]
             else:
                 self.query_api(query_string)
             self.num_queries += 1
@@ -37,7 +37,7 @@ class Record:
         self.location_arrays = location_arrays
 
     def query_google(self, query):
-        gmaps = googlemaps.Client(self.spreadsheet.api_keys['google'])
+        gmaps = googlemaps.Client(self.spreadsheet['api_keys']['google'])
         result = gmaps.geocode(query)
         if len(result) > 0:
             self.location = Location(result, 'google')
