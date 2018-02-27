@@ -26,7 +26,8 @@ class Record:
                 break
 
     def query_api(self, query_string):
-        self.query_google(query_string)
+        if(query_string is not None and query_string.strip()!=""):
+            self.query_google(query_string)
 
     def gen_location_arrays(self, location_fields):
         locations = [self.fields[location_field] for location_field in location_fields]
