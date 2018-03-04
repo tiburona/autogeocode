@@ -8,13 +8,18 @@ class Writer:
     def __init__(self, records, csv_file, status):
         self.records = records
         self.csv_file = csv_file
-        self.order_fieldnames()
         self.get_path_and_basename()
+        self.set_fieldnames()
         self.already_started = (status == 'started')
 
     def get_path_and_basename(self):
         self.file_path, basename = os.path.split(self.csv_file)
         self.file_name_root, ext = os.path.splitext(basename)
+
+    def set_fieldnames(self):
+        self.order_location_fieldnames()
+        self.pre_existing_fields = [key for key in self.records[0].fields.keys()]
+        self.id_field = self.records[0].spreadsheet['id_field']
 
     def write_file(self, fieldnames, suffix):
         if self.already_started:
@@ -30,11 +35,10 @@ class Writer:
 
     def write_files(self, files_to_write = ['new_location_csv', 'updated_csv']):
         if 'new_location_csv' in files_to_write:
-            self.write_file(self.ordered_fieldnames,'_locations')
+            fieldnames = [self.id_field] + self.ordered_location_fieldnames
+            self.write_file(fieldnames, '_locations')
         if 'updated_csv' in files_to_write:
-            location_fieldnames = self.ordered_fieldnames
-            location_fieldnames.remove('id')
-            fieldnames = [key for key in self.records[0].fields.keys()] + location_fieldnames
+            fieldnames =  self.pre_existing_fields + self.ordered_location_fieldnames
             self.write_file(fieldnames, '_updated')
 
     def write_records(self, suffix):
@@ -42,10 +46,9 @@ class Writer:
             if suffix == '_updated':
                 fields = [v for v in record.fields.values()]
             else:
-                fields = [record.fields[record.spreadsheet['id']]]
+                fields = [record.fields[self.id_field]]
             if record.location:
-                fields.extend([record.location.lat, record.location.lng])
-                for k in self.specificities:
+                for k in self.ordered_location_fieldnames:
                     try:
                         fields.append(getattr(record.location, k))
                     except AttributeError:
@@ -55,7 +58,8 @@ class Writer:
 
     def get_unique_address_components(self):
         self.unique_address_components = set([fieldname for rec in self.records for fieldname in rec.location.__dict__]) - \
-                                         {'lat', 'lng', 'src', 'address_components'}
+                                         {'lat', 'lng', 'src', 'address_components', 'query'}
+
     def get_specificities(self):
         specificities = {}
         for fieldname in self.unique_address_components:
@@ -72,7 +76,7 @@ class Writer:
                 break
         return specificity_sum / count
 
-    def order_fieldnames(self):
+    def order_location_fieldnames(self):
         self.get_unique_address_components()
         self.get_specificities()
-        self.ordered_fieldnames = ['id', 'lat', 'lng'] + [key for key in self.specificities.keys()]
+        self.ordered_location_fieldnames = ['lat', 'lng'] + [key for key in self.specificities.keys()]
