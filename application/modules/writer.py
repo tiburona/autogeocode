@@ -48,28 +48,24 @@ class Writer:
             else:
                 fields = [record.fields[self.id_field]]
             if record.location:
-                for k in self.ordered_location_fieldnames:
-                    try:
-                        fields.append(getattr(record.location, k))
-                    except AttributeError:
-                        fields.append('')
+                for fieldname in self.ordered_location_fieldnames:
+                    fields.append(record.get_location_field(fieldname))
             if suffix == '_updated' or record.location:
                 self.writer.writerow(fields)
 
-    def get_unique_address_components(self):
-        self.unique_address_components = set([fieldname for rec in self.records for fieldname in rec.location.__dict__]) - \
-                                         {'lat', 'lng', 'src', 'address_components', 'query'}
+    def get_unique_address_fieldnames(self):
+        self.unique_address_fieldnames = set([key for rec in self.records for key in rec.location.address_components])
 
     def get_specificities(self):
         specificities = {}
-        for fieldname in self.unique_address_components:
+        for fieldname in self.unique_address_fieldnames:
             specificities[fieldname] = self.calc_specificity(fieldname)
         self.specificities = OrderedDict(sorted(specificities.items(), key=lambda t: t[1]))
 
     def calc_specificity(self, fieldname):
         specificity_sum = 0; count = 0
         for record in self.records:
-            address_components = [address_component[1] for address_component in record.location.address_components]
+            address_components = [address_component for address_component in record.location.address_components]
             if fieldname in address_components:
                 count += 1
                 specificity_sum += (address_components.index(fieldname) + 1) / len(address_components)
@@ -77,6 +73,6 @@ class Writer:
         return specificity_sum / count
 
     def order_location_fieldnames(self):
-        self.get_unique_address_components()
+        self.get_unique_address_fieldnames()
         self.get_specificities()
         self.ordered_location_fieldnames = ['lat', 'lng'] + [key for key in self.specificities.keys()]
