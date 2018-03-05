@@ -21,6 +21,7 @@ class Spreadsheet:
         self.reader = csv.DictReader(open(self.csv_file, "r", newline="", encoding="utf-8"))
         self.gen_api_dict()
         self.cache = {}
+        self.failures = []
 
     def get_location_fields(self):
         print("The column headings in your CSV file are:")
@@ -71,7 +72,6 @@ class Spreadsheet:
             except Exception as e:
                 print(e)
                 print("There was an error reading the CSV file, please try again")
-
 
     def get_id_field(self):
         self.id_field = input("\n\nType the name of the record id column: ")

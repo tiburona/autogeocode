@@ -10,7 +10,7 @@ class Record:
     def __init__(self, row_dict, spreadsheet):
         self.fields = row_dict
         self.spreadsheet = {'cache': spreadsheet.cache, 'api_keys': spreadsheet.api_keys, 'id_field': spreadsheet.id_field,
-                            'location_fields': spreadsheet.location_fields}
+                            'location_fields': spreadsheet.location_fields, 'failures': spreadsheet.failures}
         self.num_queries = 0
         self.location = None
 
@@ -21,6 +21,16 @@ class Record:
            self.num_queries += 1
            if self.location or self.num_queries > 20:
                break
+        if self.num_queries > 20:
+            self.spreadsheet['failures'].append(self.fields[self.spreadsheet['id_field']])
+
+    def gen_location_arrays(self, location_fields):
+        locations = [self.fields[location_field] for location_field in location_fields]
+        location_arrays = [locations]
+        for s in [1, 2]:
+            if len(locations) > s:
+                location_arrays.extend([location_list for location_list in combinations(locations, len(locations) - s)])
+        self.location_arrays = location_arrays
 
     def generate_and_send_query(self, location_array):
         query_string = ",".join(location_array)
@@ -35,14 +45,6 @@ class Record:
 
     def query_api(self, query_string):
         self.query_google(query_string)
-
-    def gen_location_arrays(self, location_fields):
-        locations = [self.fields[location_field] for location_field in location_fields]
-        location_arrays = [locations]
-        for s in [1, 2]:
-            if len(locations) > s:
-                location_arrays.extend([location_list for location_list in combinations(locations, len(locations) - s)])
-        self.location_arrays = location_arrays
 
     def query_google(self, query):
         gmaps = googlemaps.Client(self.spreadsheet['api_keys']['google'])
