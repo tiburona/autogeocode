@@ -1,9 +1,10 @@
-import csv, os
+import csv
+import os
 from modules.record import Record
 from modules.location import Location
 from collections import OrderedDict
 
-#todo investigate whether keys are really being grabbed in order user entered them or in order they appeared on spreadsheet
+#todo fix unicode character issue
 
 class Spreadsheet:
     'Class for a single csv'
@@ -72,7 +73,7 @@ class Spreadsheet:
         while True:
             self.csv_file = input("\n\nType the path to the csv file: ")
             try:
-                f = open(self.csv_file, "r", newline="", encoding="utf-8")
+                f = open(self.csv_file, "r", newline="", encoding='utf-8')
                 self.reader = csv.DictReader(f, dialect='excel')
                 print("found and read CSV file")
                 break
@@ -91,26 +92,40 @@ class Spreadsheet:
             self.status = 'new'
 
     def create_cache_from_previously_fetched(self):
-        partial = os.path.splitext(self.csv_file)[0] + '_updated.csv'
-        predicted_path = input("Is the path to the partially completed spreadsheet (with suffix '_updated')\n"
-                               "{} \n Y/N ".format(partial))
-        if predicted_path == 'N':
-            input("Please enter the path to the to partially completed spreadsheet (with suffix '_updated')")
-        with open(partial, "r", encoding='utf-8') as f:
+        self.get_path_to_partial_file()
+        self.get_fieldnames_of_partial_file()
+        self.populate_cache()
+
+    def get_path_to_partial_file(self):
+        self.partial_file_path = os.path.splitext(self.csv_file)[0] + '_updated.csv'
+        predicted_path_correct = input("Is the path to the partially completed spreadsheet (with suffix '_updated')\n"
+                               "{} \n Y/N ".format(self.partial_file_path))
+        if predicted_path_correct == 'N':
+            self.partial_file_path = ("Please enter the path to the to partially completed spreadsheet (with suffix '_updated')")
+
+    def get_fieldnames_of_partial_file(self):
+        with open(self.partial_file_path, "r", encoding='utf-16') as f:
             firstline = f.readline().replace('\n', '').split(',')
-            location_result_fields = firstline[firstline.index('lat'):]
-        f = open(partial, "r", encoding='utf-8')
-        reader = csv.DictReader(f)
-        for row in reader:
-            location_fields = OrderedDict([(fieldname, row[fieldname]) for fieldname in self.location_fields
-                                           if fieldname in row and len(row[fieldname])])
-            result = OrderedDict([(key, val) for key, val in row.items() if key in location_result_fields])
-            query_string = ','.join([val for key, val in location_fields.items()])
-            if any([val for _, val in result.items()]):
-                self.cache[query_string] = Location(result, 'previously_fetched', query_string)
-            else:
-                self.cache[query_string] = None
-        f.close()
+            self.location_result_fieldnames = firstline[firstline.index('lat'):]
+
+    def populate_cache(self):
+        with open(self.partial_file_path, "r", encoding='utf-16') as f:
+            for row in csv.DictReader(f):
+                result, query_string = self.read_prev_result(row)
+                self.write_prev_result(query_string, result)
+
+    def read_prev_result(self, row):
+        location_fields = OrderedDict([(fieldname, row[fieldname]) for fieldname in self.location_fields
+                                       if fieldname in row and len(row[fieldname])])
+        result = OrderedDict([(key, val) for key, val in row.items() if key in self.location_result_fieldnames])
+        query_string = ','.join([val for key, val in location_fields.items()])
+        return [result, query_string]
+
+    def write_prev_result(self, query_string, result):
+        if any([val for _, val in result.items()]):
+            self.cache[query_string] = Location(result, 'previously_fetched', query_string)
+        else:
+            self.cache[query_string] = None
 
     def fetch_geocoded_data(self):
         if self.status == 'started':

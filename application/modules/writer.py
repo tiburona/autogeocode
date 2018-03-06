@@ -1,5 +1,5 @@
 import os
-import csv
+import unicodecsv as csv
 from collections import OrderedDict
 
 class Writer:
@@ -31,14 +31,14 @@ class Writer:
 
     def write_file(self, suffix, fieldnames,):
         filename = os.path.join(self.file_path, self.file_name_root + suffix + '.csv')
-        self.generate_writer(filename, 'w')
+        self.generate_writer(filename, 'wb')
         self.writer.writerow(fieldnames)
         self.write_records(suffix)
         self.f.close()
 
     def generate_writer(self, filename, mode):
         self.f = open(filename, mode)
-        self.writer = csv.writer(self.f, delimiter=',')
+        self.writer = csv.writer(self.f, delimiter=',', encoding='utf-16')
 
     def write_records(self, suffix):
         for record in self.records:
@@ -56,7 +56,8 @@ class Writer:
 
         if record.location and suffix != '_failures':
             for fieldname in self.ordered_location_fieldnames:
-                fields.append(record.get_location_field(fieldname))
+                field = record.get_location_field(fieldname)
+                fields.append(field)
         return fields
 
     def order_location_fieldnames(self):
