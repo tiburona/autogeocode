@@ -102,7 +102,8 @@ class Spreadsheet:
         f = open(partial, "r", encoding='utf-8')
         reader = csv.DictReader(f)
         for row in reader:
-            location_fields = OrderedDict([(key, val) for key, val in row.items() if key in self.location_fields and len(val)])
+            location_fields = OrderedDict([(fieldname, row[fieldname]) for fieldname in self.location_fields
+                                           if fieldname in row and len(row[fieldname])])
             result = OrderedDict([(key, val) for key, val in row.items() if key in location_result_fields])
             query_string = ','.join([val for key, val in location_fields.items()])
             if any([val for _, val in result.items()]):
