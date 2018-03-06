@@ -25,7 +25,8 @@ class Record:
             self.spreadsheet['failures'].append(self.fields[self.spreadsheet['id_field']])
 
     def gen_first_location_array(self):
-        return [self.fields[location_field] for location_field in self.spreadsheet['location_fields']]
+        location_fields = [self.fields[location_field] for location_field in self.spreadsheet['location_fields']]
+        return [location_field for location_field in location_fields if location_field is not '']
 
     def gen_location_arrays(self):
         locations = self.gen_first_location_array()
@@ -54,6 +55,7 @@ class Record:
         result = gmaps.geocode(query)
         if len(result) > 0:
             self.location = Location(result, 'google', query)
+            self.spreadsheet['cache'][query] = self.location
 
     def get_location_field(self, field):
         try:

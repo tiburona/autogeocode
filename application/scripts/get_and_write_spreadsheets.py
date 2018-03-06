@@ -13,7 +13,7 @@ new_spreadsheet = spreadsheet.Spreadsheet(csv_file='/Users/katie/map-collections
                                       location_fields='Island,City/Town/Hamlet,Stream,River/Creek,Lake/Pond/Reservoir,'
                                                       'Island Group,Bay/Harbor,Department / Province / State,Country,Sea/Gulf/Strait,Ocean',
                                       id_field='Tracking Number',
-                                      status='already_started')
+                                      status='new')
 
 
 #new_spreadsheet = spreadsheet.Spreadsheet()

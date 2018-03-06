@@ -111,10 +111,6 @@ class Spreadsheet:
                 self.cache[query_string] = None
         f.close()
 
-    def split_field_string(self):
-        if hasattr(self.location_fields, 'split'): #what is this doing?
-            self.location_fields = self.location_fields.split(",")
-
     def fetch_geocoded_data(self):
         if self.status == 'started':
             self.records = [Record(row, self) for row in self.reader if len(row['lat']) < 1]
