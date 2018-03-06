@@ -15,7 +15,7 @@ class Record:
         self.location = None
 
     def fetch_geocoded_data(self):
-        self.gen_location_arrays(self.spreadsheet['location_fields'])
+        self.gen_location_arrays()
         for location_array in self.location_arrays:
            self.generate_and_send_query(location_array)
            self.num_queries += 1
@@ -24,8 +24,11 @@ class Record:
         if self.num_queries > 20:
             self.spreadsheet['failures'].append(self.fields[self.spreadsheet['id_field']])
 
-    def gen_location_arrays(self, location_fields):
-        locations = [self.fields[location_field] for location_field in location_fields]
+    def gen_first_location_array(self):
+        return [self.fields[location_field] for location_field in self.spreadsheet['location_fields']]
+
+    def gen_location_arrays(self):
+        locations = self.gen_first_location_array()
         location_arrays = [locations]
         for s in [1, 2]:
             if len(locations) > s:
@@ -33,7 +36,7 @@ class Record:
         self.location_arrays = location_arrays
 
     def generate_and_send_query(self, location_array):
-        query_string = ",".join(location_array)
+        query_string = ",".join([field for field in location_array if len(field)])
         if self.has_non_whitespace_chars(query_string):
             if query_string in self.spreadsheet['cache']:
                 self.location = self.spreadsheet['cache'][query_string]

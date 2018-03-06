@@ -30,17 +30,9 @@ class Writer:
         [self.write_file(suffix, suffix_to_fieldnames[suffix]) for suffix in suffixes_of_files_to_write]
 
     def write_file(self, suffix, fieldnames,):
-        if suffix == '_updated' and self.already_started:
-            filename = os.path.join(self.file_path, self.file_name_root + '.csv')
-        else:
-            filename = os.path.join(self.file_path, self.file_name_root + suffix + '.csv')
-
-        if self.already_started:
-            self.generate_writer(filename, 'a')
-        else:
-            self.generate_writer(filename, 'w')
-            self.writer.writerow(fieldnames)
-
+        filename = os.path.join(self.file_path, self.file_name_root + suffix + '.csv')
+        self.generate_writer(filename, 'w')
+        self.writer.writerow(fieldnames)
         self.write_records(suffix)
         self.f.close()
 
