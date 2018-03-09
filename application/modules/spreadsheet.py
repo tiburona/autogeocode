@@ -24,11 +24,9 @@ class Spreadsheet:
             self.location_fields = self.location_fields.split(',')
         except:
             pass
-<<<<<<< HEAD
+
         self.reader = csv.DictReader(open(self.csv_file, "r", newline="", encoding="utf-8"))
         self.failures = []
-=======
->>>>>>> origin/tyler_dev
         self.gen_api_dict()
         if self.status == 'already_started':
             self.create_cache_from_previously_fetched()
