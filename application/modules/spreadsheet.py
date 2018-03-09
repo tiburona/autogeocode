@@ -24,15 +24,18 @@ class Spreadsheet:
             self.location_fields = self.location_fields.split(',')
         except:
             pass
+<<<<<<< HEAD
         self.reader = csv.DictReader(open(self.csv_file, "r", newline="", encoding="utf-8"))
         self.failures = []
+=======
+>>>>>>> origin/tyler_dev
         self.gen_api_dict()
         if self.status == 'already_started':
             self.create_cache_from_previously_fetched()
 
     def get_location_fields(self):
         print("The column headings in your CSV file are:")
-        print(self.reader.fieldnames)
+        print(self.getReader().fieldnames)
         entry_method = input('\n\nPress C to enter the location fields as a list separated by commas. '
                              'Press 1 to enter them one at a time: ')
 
@@ -49,7 +52,7 @@ class Spreadsheet:
             self.location_fields = location_fields
 
         else:
-            self.location_fields = input('Enter a list of fields separated by commas').split(',')
+            self.location_fields = input('Enter a list of fields separated by commas: ').split(',')
 
 
     def get_api_file(self):
@@ -85,7 +88,7 @@ class Spreadsheet:
         self.id_field = input("\n\nType the name of the record id column: ")
 
     def get_status(self):
-        status = input("Are you reuploading a spreadsheet that has been partially completed by this program before? Y/N ")
+        status = input("Are you reuploading a spreadsheet that has been partially completed by this program before? Y/N: ")
         if status == 'Y':
             self.status = 'already_started'
         else:
@@ -128,15 +131,17 @@ class Spreadsheet:
             self.cache[query_string] = None
 
     def fetch_geocoded_data(self):
+        self.location_fields = [item.strip() for item in self.location_fields]
         if self.status == 'started':
-            self.records = [Record(row, self) for row in self.reader if len(row['lat']) < 1]
+            self.records = [Record(row, self) for row in self.getReader() if len(row['lat']) > 1]
         else:
-            self.records = [Record(row, self) for row in self.reader]
+            self.records = [Record(row, self) for row in self.getReader()]
         [record.fetch_geocoded_data() for record in self.records]
 
-
-
-
-
-
-
+    def getReader(self):
+        if hasattr(self, 'reader'):
+            return self.reader
+        else:
+            self.reader = csv.DictReader(open(self.csv_file, "r", newline="", encoding="utf-8"))
+            print("Read existing CSV file\n")
+            return self.reader
