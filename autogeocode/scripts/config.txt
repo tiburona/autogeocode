@@ -1,0 +1,13 @@
+[CSVFILE]
+path = /Users/katie/autogeocode/csvs/small_test.csv
+location_fields = Island,City/Town/Hamlet,Stream,River/Creek,Lake/Pond/Reservoir,Island Group,Bay/Harbor,Department / Province / State,Country,Sea/Gulf/Strait,Ocean
+id_field = Tracking Number
+
+[APIKEYS]
+api_file = /Users/katie/autogeocode/keys.txt
+google_key = AIzaSyA3k5SpAOOdB0Bw92ZYcHDb6GTzxlJvMBg
+geocode_key = oceanocoders
+bing_key = AjEl9PcIPe1ZAyZfPf2fdpIy8vTMI02tNGE61HUs1-LtOKV_Zs6R93UThhEp9Bhw
+
+[STATUS]
+already_started = N
