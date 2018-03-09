@@ -47,7 +47,7 @@ class Spreadsheet:
             self.location_fields = location_fields
 
         else:
-            self.location_fields = input('Enter a list of fields separated by commas').split(',')
+            self.location_fields = input('Enter a list of fields separated by commas: ').split(',')
 
 
     def get_api_file(self):
@@ -83,7 +83,7 @@ class Spreadsheet:
         self.id_field = input("\n\nType the name of the record id column: ")
 
     def get_status(self):
-        status = input("Are you reuploading a spreadsheet that has been partially completed by this program before? Y/N ")
+        status = input("Are you reuploading a spreadsheet that has been partially completed by this program before? Y/N: ")
         if status == 'Y':
             self.status = 'already_started'
         else:
@@ -131,10 +131,3 @@ class Spreadsheet:
         else:
             self.records = [Record(row, self) for row in self.reader]
         [record.fetch_geocoded_data() for record in self.records]
-
-
-
-
-
-
-

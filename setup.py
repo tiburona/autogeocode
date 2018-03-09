@@ -1,4 +1,5 @@
 from setuptools import setup
+from setuptools import find_packages
 
 setup(name='autogeocode',
       version='0.1',
@@ -7,7 +8,7 @@ setup(name='autogeocode',
       author='Katie Surrence',
       author_email='tiburona@gmail.com',
       license='MIT',
-      packages=['autogeocode'],
+      packages=find_packages(),
       install_requires=[
             'googlemaps',
             'unicodecsv'
