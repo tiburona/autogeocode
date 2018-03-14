@@ -7,13 +7,13 @@ from collections import OrderedDict
 class Spreadsheet:
     'Class for a single csv'
 
-    def __init__(self, csv_file=None, location_fields=None, api_file=None, id_field=None, status=None, partial=None):
+    def __init__(self, csv_path=None, location_fields=None, google_key=None, id_field=None, started=None, prev_fetched=None):
         self.cache = {}
-        for var, method, string in [(csv_file, self.get_csv_file, 'csv_file'),
-                                    (api_file, self.get_api_file, 'api_file'),
+        for var, method, string in [(csv_path, self.get_csv_path, 'csv_path'),
+                                    (google_key, self.get_google_key, 'google_key'),
                                     (location_fields, self.get_location_fields, 'location_fields'),
                                     (id_field, self.get_id_field, 'id_field'),
-                                    (status, self.get_status, 'status')]:
+                                    (started, self.get_started_status, 'started')]:
             if var:
                 setattr(self, string, var)
             else:
@@ -22,10 +22,10 @@ class Spreadsheet:
             self.location_fields = self.location_fields.split(',')
         except:
             pass
-        self.reader = csv.DictReader(open(self.csv_file, "r", newline="", encoding="utf-8"))
+        self.reader = csv.DictReader(open(self.csv_path, "r", newline="", encoding="utf-8"))
         self.failures = []
-        self.gen_api_dict()
-        if self.status == 'already_started':
+        self.api_keys = {'google': self.google_key}
+        if self.started == 'started':
             self.create_cache_from_previously_fetched()
 
     def get_location_fields(self):
@@ -67,11 +67,16 @@ class Spreadsheet:
         with open(self.api_file, 'r') as f:
             self.api_keys = dict([line.replace("\n", '').split('=') for line in f.readlines() if len(line) > 1])
 
-    def get_csv_file(self):
+    def get_google_key(self):
+        self.google_key = input("\n\nEnter your key for the Google Maps API: ")
+
+
+
+    def get_csv_path(self):
         while True:
             self.csv_file = input("\n\nType the path to the csv file: ")
             try:
-                f = open(self.csv_file, "r", newline="", encoding='utf-8')
+                f = open(self.csv_path, "r", newline="", encoding='utf-8')
                 self.reader = csv.DictReader(f, dialect='excel')
                 print("found and read CSV file")
                 break
@@ -82,12 +87,12 @@ class Spreadsheet:
     def get_id_field(self):
         self.id_field = input("\n\nType the name of the record id column: ")
 
-    def get_status(self):
-        status = input("Are you reuploading a spreadsheet that has been partially completed by this program before? Y/N: ")
-        if status == 'Y':
-            self.status = 'already_started'
+    def get_started_status(self):
+        started = input("Are you reuploading a spreadsheet that has been partially completed by this program before? Y/N: ")
+        if started == 'Y':
+            self.started = 'started'
         else:
-            self.status = 'new'
+            self.started = 'new'
 
     def create_cache_from_previously_fetched(self):
         self.get_path_to_partial_file()
@@ -126,8 +131,5 @@ class Spreadsheet:
             self.cache[query_string] = None
 
     def fetch_geocoded_data(self):
-        if self.status == 'started':
-            self.records = [Record(row, self) for row in self.reader if len(row['lat']) < 1]
-        else:
-            self.records = [Record(row, self) for row in self.reader]
+        self.records = [Record(row, self) for row in self.reader]
         [record.fetch_geocoded_data() for record in self.records]

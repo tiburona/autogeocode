@@ -10,4 +10,4 @@ geocode_key = oceanocoders
 bing_key = AjEl9PcIPe1ZAyZfPf2fdpIy8vTMI02tNGE61HUs1-LtOKV_Zs6R93UThhEp9Bhw
 
 [STATUS]
-already_started = N
+started = N

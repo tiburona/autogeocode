@@ -9,11 +9,11 @@ print('Island,City/Town/Hamlet,Stream,River/Creek,Lake/Pond/Reservoir,Island Gro
 
 
 new_spreadsheet = spreadsheet.Spreadsheet(csv_file='/Users/katie/autogeocode/csvs/small_test.csv',
-                                      api_file='/Users/katie/autogeocode/keys.txt',
-                                      location_fields='Island,City/Town/Hamlet,Stream,River/Creek,Lake/Pond/Reservoir,'
+                                          api_file='/Users/katie/autogeocode/keys.txt',
+                                          location_fields='Island,City/Town/Hamlet,Stream,River/Creek,Lake/Pond/Reservoir,'
                                                       'Island Group,Bay/Harbor,Department / Province / State,Country,Sea/Gulf/Strait,Ocean',
-                                      id_field='Tracking Number',
-                                      status='already_started')
+                                          id_field='Tracking Number',
+                                          started='already_started')
 
 
 #new_spreadsheet = spreadsheet.Spreadsheet()
