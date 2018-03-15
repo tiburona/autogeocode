@@ -5,12 +5,11 @@ from collections import OrderedDict
 class Writer:
     'class to write new csvs'
 
-    def __init__(self, records, csv_path, status):
+    def __init__(self, records, csv_path):
         self.records = records
         self.csv_path = csv_path
         self.get_path_and_basename()
         self.set_fieldnames()
-        self.already_started = (status == 'started')
 
     def get_path_and_basename(self):
         self.file_path, basename = os.path.split(self.csv_path)

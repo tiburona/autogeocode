@@ -34,6 +34,7 @@ def main():
     if args.config:
         argname_to_argvar.update(argument_fetcher.read_config_file(args.config))
 
+
     for arg_name in argname_to_argvar:
         try:
             if getattr(args, arg_name) is not None:
@@ -42,13 +43,14 @@ def main():
             print("I don't know the argument {}.  I'm going to ignore it.".format(arg_name))
 
     argument_fetcher.set_spreadsheet_args(argname_to_argvar)
+
     argument_fetcher.check_for_missing_args()
 
     new_spreadsheet = spreadsheet.Spreadsheet(**argument_fetcher.gen_arguments_dict())
 
     new_spreadsheet.fetch_geocoded_data()
 
-    new_writer = writer.Writer(new_spreadsheet.records, new_spreadsheet.csv_path, new_spreadsheet.started)
+    new_writer = writer.Writer(new_spreadsheet.records, new_spreadsheet.csv_path)
 
     new_writer.write_files()
 

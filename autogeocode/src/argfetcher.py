@@ -16,7 +16,6 @@ class ArgumentFetcher:
 
         self.arg_list =  ['csv_path', 'id_field', 'location_fields', 'google_key', 'started', 'prev_fetched']
 
-
     @property
     def csv_path(self):
         return self.__csv_path
@@ -62,7 +61,7 @@ class ArgumentFetcher:
             self.get_location_fields_from_user()
 
     def get_location_fields_from_user(self):
-        entry_method = input("\n\nEnter the names of the location fields in your spreadsheet, from most to least"
+        entry_method = input("\nEnter the names of the location fields in your spreadsheet, from most to least"
                              "specific. Press C to enter the location fields as a list separated by commas (e.g. "
                              "City/State/Country). Press 1 to enter them one at a time: ")
 
@@ -103,7 +102,7 @@ class ArgumentFetcher:
             self.get_id_field_from_user()
 
     def get_id_field_from_user(self):
-        self.id_field = input("\n\nType the name of the record id column: ")
+        self.id_field = input("\nType the name of the record id column: ")
 
     @property
     def google_key(self):
@@ -153,7 +152,7 @@ class ArgumentFetcher:
     def prev_fetched(self, path):
         try:
             with open(path, 'r') as f:
-                self.prev_fetched = csv.DictReader(f)
+                reader = csv.DictReader(f)
                 self.__prev_fetched = path
                 print("Successfully read previously fetched CSV file at {}".format(self.csv_path))
         except Exception as e:
@@ -199,7 +198,7 @@ class ArgumentFetcher:
                 method()
 
         if hasattr(self, 'started'):
-            if self.started == 'Y':
+            if self.started == 'started':
                 if not hasattr(self, 'prev_fetched'):
                     self.get_prev_fetched_csv_from_user()
 

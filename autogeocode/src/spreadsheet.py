@@ -33,7 +33,7 @@ class Spreadsheet:
         self.cache = {}
         self.failures = []
 
-        if self.started == 'Y':
+        if self.started == 'started':
             self.create_cache_from_previously_fetched()
 
     def gen_reader(self):
@@ -52,7 +52,7 @@ class Spreadsheet:
             self.location_result_fieldnames = firstline[firstline.index('lat'):]
 
     def populate_cache(self):
-        with open(self.partial_file_path, "r", encoding='utf-16') as f:
+        with open(self.prev_fetched, "r", encoding='utf-16') as f:
             for row in csv.DictReader(f):
                 result, query_string = self.read_prev_result(row)
                 self.write_prev_result(query_string, result)

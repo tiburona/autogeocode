@@ -1,6 +1,7 @@
 [CSVFILE]
 csv_path = /Users/katie/autogeocode/csvs/small_test.csv
 location_fields = Island,City/Town/Hamlet,Stream,River/Creek,Lake/Pond/Reservoir,Island Group,Bay/Harbor,Department / Province / State,Country,Sea/Gulf/Strait,Ocean
+id_field=Tracking Number
 
 [APIKEYS]
 api_file = /Users/katie/autogeocode/keys.txt
