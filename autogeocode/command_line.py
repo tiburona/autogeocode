@@ -1,18 +1,9 @@
-import sys
 import argparse
+from collections import OrderedDict
 
 from autogeocode.src import spreadsheet
 from autogeocode.src import writer
-from autogeocode.src import argreader
-
-
-# need help text
-# need config file -c
-# google api -g
-# id_field -i
-# already_started -s
-# previously_fetched = -p
-
+from autogeocode.src import argfetcher
 
 args_to_help = {
     '--config': 'path to the config file',
@@ -21,7 +12,7 @@ args_to_help = {
     '--location_fields': 'a comma-separated list of field names with location information in the csv file. E.g. '
                          'City,State,Country. Location field names should go from more to less specific.',
     '--google_key': 'key for the Google Maps Api',
-    '--id_fieldname': 'column name for the unique record identifier in the input spreadsheet',
+    '--id_field': 'column name for the unique record identifier in the input spreadsheet',
     '--started': 'A Y value indicates that this some records for this spreadsheet have been fetched already.  Any other '
                  'value results in the default behavior, assuming a new spreadsheet.',
     '--prev_fetched': "If some records for the spreadsheet have been fetched before, this is the path to the updated "
@@ -29,32 +20,31 @@ args_to_help = {
 }
 
 
-
 def main():
 
-    argname_to_argvar = dict([(argname, None) for argname in ['csv_path','location_fields', 'google_key','started',
-        'id_field', 'prev_fetched']])
+    argname_to_argvar = OrderedDict.fromkeys(['csv_path','location_fields', 'id_field', 'google_key','started',
+                                              'prev_fetched'])
 
     parser = argparse.ArgumentParser()
-    for arg, help in args_to_help.items():
-        parser.add_argument(arg, help=help)
+    [parser.add_argument(arg, help=help) for arg, help in args_to_help.items()]
     args = parser.parse_args()
 
+    argument_fetcher = argfetcher.ArgumentFetcher()
+
     if args.config:
-        argument_reader = argreader.ArgumentReader()
-        argument_reader.read_config_file(args.config)
-        argname_to_argvar.update(argument_reader.spreadsheet_arguments())
+        argname_to_argvar.update(argument_fetcher.read_config_file(args.config))
 
     for arg_name in argname_to_argvar:
         try:
             if getattr(args, arg_name) is not None:
                 argname_to_argvar[arg_name] = getattr(args, arg_name)
         except:
-            print("could not get attr " + arg_name)
+            print("I don't know the argument {}.  I'm going to ignore it.".format(arg_name))
 
-    print(argname_to_argvar)
+    argument_fetcher.set_spreadsheet_args(argname_to_argvar)
+    argument_fetcher.check_for_missing_args()
 
-    new_spreadsheet = spreadsheet.Spreadsheet(**argname_to_argvar)
+    new_spreadsheet = spreadsheet.Spreadsheet(**argument_fetcher.gen_arguments_dict())
 
     new_spreadsheet.fetch_geocoded_data()
 
@@ -80,6 +70,3 @@ def usage():
 if __name__ == '__main__':
     main()
 
-hello = 'hey'
-
-print(hello)

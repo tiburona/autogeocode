@@ -1,113 +1,53 @@
 import csv
-import os
 from .record import Record
 from .location import Location
 from collections import OrderedDict
 
 class Spreadsheet:
-    'Class for a single csv'
+    """Class to represent the input CSV file, build a cache of previously fetched records, and start record fetching"""
 
-    def __init__(self, csv_path=None, location_fields=None, google_key=None, id_field=None, started=None, prev_fetched=None):
-        self.cache = {}
-        for var, method, string in [(csv_path, self.get_csv_path, 'csv_path'),
-                                    (google_key, self.get_google_key, 'google_key'),
-                                    (location_fields, self.get_location_fields, 'location_fields'),
-                                    (id_field, self.get_id_field, 'id_field'),
-                                    (started, self.get_started_status, 'started')]:
-            if var:
-                setattr(self, string, var)
-            else:
-                method()
-        try:
-            self.location_fields = self.location_fields.split(',')
-        except:
-            pass
-        self.reader = csv.DictReader(open(self.csv_path, "r", newline="", encoding="utf-8"))
-        self.failures = []
+    def __init__(self, csv_path=None, location_fields=None, google_key=None, id_field=None, started=None,
+                 **kwargs):
+        """
+        Keyword args:
+            csv_path (str, optional): Path to the input CSV file.  If none is provided, the user will be prompted.
+            location_fields(str or list, optional): A comma-separated string with fieldnames, or a list of fieldnames,
+            for fields that contain information.
+            google_key(str, optional): A key to the Google Maps API.
+            id_field(str, optional): The name of the field that contains the unique record identifier.
+            started(str, optional): A value to indicate whether geocoded data for some of the records on the spreadsheet
+            have been fetched previously. 'Y' will indicate that they have, and that prev_fetched must also be supplied
+            as a keyword argument
+        """
+
+        self.csv_path = csv_path
+        self.gen_reader()
+        self.location_fields = location_fields
+        self.google_key = google_key
+        self.id_field = id_field
+        self.started = started
+
+        [setattr(self, arg_name, arg) for arg_name, arg in kwargs.items()]
+
         self.api_keys = {'google': self.google_key}
-        if self.started == 'started':
+        self.cache = {}
+        self.failures = []
+
+        if self.started == 'Y':
             self.create_cache_from_previously_fetched()
 
-    def get_location_fields(self):
-        print("The column headings in your CSV file are:")
-        print(self.reader.fieldnames)
-        entry_method = input('\n\nPress C to enter the location fields as a list separated by commas. '
-                             'Press 1 to enter them one at a time: ')
-
-        if entry_method == '1':
-            more_location_fields = True
-            location_fields = []
-            while more_location_fields:
-                next_location_field = input(
-                    "Type the next location field, or type END_FIELDS if there are no more: ")
-                more_location_fields = next_location_field != 'END_FIELDS' and len(location_fields) < 21
-                if next_location_field != 'END_FIELDS':
-                    location_fields.append(next_location_field)
-
-            self.location_fields = location_fields
-
-        else:
-            self.location_fields = input('Enter a list of fields separated by commas: ').split(',')
-
-
-    def get_api_file(self):
-        print("\n\nA file with the API keys should be in the format <keytype>=<keyvalue>")
-        self.api_file = input("Type the path to a file with the api keys: ")
-        while True:
-            try:
-                self.gen_api_dict()
-                print("Generated API key dictionary")
-                break
-            except Exception as e:
-                print(e)
-                print("There was an error reading the API file, please try again.")
-
-
-    def gen_api_dict(self):
-        with open(self.api_file, 'r') as f:
-            self.api_keys = dict([line.replace("\n", '').split('=') for line in f.readlines() if len(line) > 1])
-
-    def get_google_key(self):
-        self.google_key = input("\n\nEnter your key for the Google Maps API: ")
-
-
-
-    def get_csv_path(self):
-        while True:
-            self.csv_file = input("\n\nType the path to the csv file: ")
-            try:
-                f = open(self.csv_path, "r", newline="", encoding='utf-8')
-                self.reader = csv.DictReader(f, dialect='excel')
-                print("found and read CSV file")
-                break
-            except Exception as e:
-                print(e)
-                print("There was an error reading the CSV file, please try again")
-
-    def get_id_field(self):
-        self.id_field = input("\n\nType the name of the record id column: ")
-
-    def get_started_status(self):
-        started = input("Are you reuploading a spreadsheet that has been partially completed by this program before? Y/N: ")
-        if started == 'Y':
-            self.started = 'started'
-        else:
-            self.started = 'new'
+    def gen_reader(self):
+        """"""
+        self.reader = csv.DictReader(open(self.csv_path, "r"))
 
     def create_cache_from_previously_fetched(self):
-        self.get_path_to_partial_file()
+        """
+        """
         self.get_fieldnames_of_partial_file()
         self.populate_cache()
 
-    def get_path_to_partial_file(self):
-        self.partial_file_path = os.path.splitext(self.csv_file)[0] + '_updated.csv'
-        predicted_path_correct = input("Is the path to the partially completed spreadsheet (with suffix '_updated')\n"
-                               "{} \n Y/N ".format(self.partial_file_path))
-        if predicted_path_correct == 'N':
-            self.partial_file_path = ("Please enter the path to the to partially completed spreadsheet (with suffix '_updated')")
-
     def get_fieldnames_of_partial_file(self):
-        with open(self.partial_file_path, "r", encoding='utf-16') as f:
+        with open(self.prev_fetched, "r", encoding='utf-16') as f:
             firstline = f.readline().replace('\n', '').split(',')
             self.location_result_fieldnames = firstline[firstline.index('lat'):]
 
@@ -132,4 +72,9 @@ class Spreadsheet:
 
     def fetch_geocoded_data(self):
         self.records = [Record(row, self) for row in self.reader]
-        [record.fetch_geocoded_data() for record in self.records]
+        print("There are {} records to fetch.".format(len(self.records)))
+        for i, record in enumerate(self.records):
+            record.fetch_geocoded_data()
+            if (i+1)%100 == 0:
+                print("Fetched {} of {} records".format(i, len(self.records)))
+

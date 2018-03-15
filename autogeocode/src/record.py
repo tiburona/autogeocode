@@ -9,8 +9,9 @@ class Record:
 
     def __init__(self, row_dict, spreadsheet):
         self.fields = row_dict
-        self.spreadsheet = {'cache': spreadsheet.cache, 'api_keys': spreadsheet.api_keys, 'id_field': spreadsheet.id_field,
-                            'location_fields': spreadsheet.location_fields, 'failures': spreadsheet.failures}
+        self.spreadsheet = {'cache': spreadsheet.cache, 'api_keys': spreadsheet.api_keys,
+                            'id_field': spreadsheet.id_field, 'location_fields': spreadsheet.location_fields,
+                            'failures': spreadsheet.failures}
         self.num_queries = 0
         self.location = None
 
